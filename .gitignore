@@ -9,3 +9,4 @@ index/
 .eval-cache/
 eval/.cache/
 *.pyc
+.DS_Store

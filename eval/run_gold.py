@@ -24,12 +24,18 @@ from factcheck.factory import build_session  # noqa: E402
 
 ROOT = Path(__file__).parent.parent
 
-# The free-tier Gemini key this project uses caps gemini-flash-latest at 5
-# requests/minute, and one claim spends 3-4 calls (expand, verify, one audit per
-# surviving quote). Neither GeminiClient nor the CLI retries on 429 -- that's a
-# real gap, noted in the report -- so this one-off runner paces itself instead of
-# bursting into a wall of ModelCallError.
-CLAIM_SPACING_S = 45
+# The free-tier Gemini key this project uses hits two separate 429s against
+# gemini-3.6-flash (what `gemini-flash-latest` resolves to): a per-minute RPM cap
+# (quotaId GenerateRequestsPerMinutePerProjectPerModel-FreeTier, value 5) and what
+# empirically behaves like a *daily* cap (error text: "limit: 20, model:
+# gemini-3.6-flash") -- confirmed by observation, not documentation: every retry
+# failed identically whether it waited 5s or 60s, across the model's own suggested
+# RetryInfo delays. One claim spends 3-4 calls, so at most ~5 claims/day can ever
+# complete on this key regardless of pacing. Neither GeminiClient nor the CLI
+# retries on 429 -- that's a real gap, noted in the report -- so this one-off
+# runner paces itself and writes incrementally, so a run that dies partway
+# (quota, crash, Ctrl-C) doesn't lose what it already paid for.
+CLAIM_SPACING_S = 15
 MAX_RETRIES = 3
 RETRY_BACKOFF_S = 20
 
@@ -49,8 +55,24 @@ def main() -> None:
         cfg, ROOT / "index", ROOT / "data", cache_dir=ROOT / "eval" / ".cache"
     )
 
-    rows = []
-    for i, g in enumerate(gold):
+    out_path = ROOT / "eval" / "results.json"
+    existing = {r["claim_id"]: r for r in json.loads(out_path.read_text())} \
+        if out_path.exists() else {}
+    rows = [existing[g.claim_id] for g in gold
+            if g.claim_id in existing and existing[g.claim_id]["actual_verdict"] != "error"]
+    done_ids = {r["claim_id"] for r in rows}
+    remaining = [g for g in gold if g.claim_id not in done_ids]
+    if done_ids:
+        print(f"resuming: {len(done_ids)}/{len(gold)} already have a real result, "
+              f"skipping those", flush=True)
+
+    by_id = {r["claim_id"]: r for r in rows}
+
+    def flush() -> None:
+        ordered = [by_id[g.claim_id] for g in gold if g.claim_id in by_id]
+        out_path.write_text(json.dumps(ordered, indent=2), encoding="utf-8")
+
+    for i, g in enumerate(remaining):
         result = None
         last_error = None
         for attempt in range(1, MAX_RETRIES + 1):
@@ -61,11 +83,13 @@ def main() -> None:
                 last_error = exc
                 if attempt < MAX_RETRIES:
                     print(f"  [{g.claim_id}] attempt {attempt} failed ({exc}); "
-                          f"retrying in {RETRY_BACKOFF_S}s")
+                          f"retrying in {RETRY_BACKOFF_S}s", flush=True)
                     time.sleep(RETRY_BACKOFF_S)
+
         if result is None:
-            print(f"[ERROR] {g.claim_id:<16} gave up after {MAX_RETRIES} attempts: {last_error}")
-            rows.append({
+            print(f"[ERROR] {g.claim_id:<16} gave up after {MAX_RETRIES} attempts: {last_error}",
+                  flush=True)
+            by_id[g.claim_id] = {
                 "claim_id": g.claim_id,
                 "category": category_of(g.note),
                 "input": g.claim,
@@ -75,15 +99,16 @@ def main() -> None:
                 "match": False,
                 "error": str(last_error),
                 "note": g.note,
-            })
-            if i < len(gold) - 1:
+            }
+            flush()
+            if i < len(remaining) - 1:
                 time.sleep(CLAIM_SPACING_S)
             continue
 
         actual = result.verdict.value
         expected = g.label.value
         match = actual == expected
-        row = {
+        by_id[g.claim_id] = {
             "claim_id": g.claim_id,
             "category": category_of(g.note),
             "input": g.claim,
@@ -107,16 +132,16 @@ def main() -> None:
             },
             "note": g.note,
         }
-        rows.append(row)
+        flush()
         flag = "OK" if match else "MISMATCH"
         print(f"[{flag}] {g.claim_id:<16} expected={expected:<12} actual={actual:<12} "
-              f"({result.stats.elapsed_s:.1f}s)")
-        if i < len(gold) - 1:
+              f"({result.stats.elapsed_s:.1f}s)", flush=True)
+        if i < len(remaining) - 1:
             time.sleep(CLAIM_SPACING_S)
 
-    out_path = ROOT / "eval" / "results.json"
-    out_path.write_text(json.dumps(rows, indent=2), encoding="utf-8")
-    print(f"\nwrote {len(rows)} rows to {out_path}")
+    ordered = [by_id[g.claim_id] for g in gold if g.claim_id in by_id]
+    completed = sum(1 for r in ordered if r["actual_verdict"] != "error")
+    print(f"\n{completed}/{len(gold)} claims completed; wrote {out_path}", flush=True)
 
 
 if __name__ == "__main__":
