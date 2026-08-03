@@ -98,8 +98,29 @@ introduced by this session's Gemini work:
    (1), this failure mode is currently invisible: the call that can silently
    fail is also the one call nothing counts.
 
-Neither is fixed here — flagged for a decision, not patched blind, since (2) in
-particular is a design choice (fail open vs. fail loud) rather than an obvious bug.
+**Both fixed** (commit `c9baebc`, after this report's first version flagged them
+as open decisions rather than patching blind): `expander_llm` is now wrapped in
+the same `CountingLLM`/counter the verifier and auditor already use, and
+`NegationAwareExpander.expand()` now only degrades silently on a *successful*
+call with unusable output (`ValueError` from `_parse_expansion`) — a call that
+outright fails (`ModelCallError`) now propagates to the CLI boundary like every
+other stage already does, instead of silently falling back to no-negation-query
+retrieval. Verified directly (a hermetic scripted run now reports `llm_calls=3`
+for one expander + one verifier + one auditor call, not 2) and via the full
+suite, `mypy`, and `ruff`, all clean.
+
+One consequence worth flagging rather than assuming: the 6 completed claims
+above, including the 3 `contradicted → unknown` mismatches, ran *before* this
+fix, under the old silently-swallowing behavior. Since all 3 mismatches show
+`quotes_proposed >= 1` (the verifier ran and proposed a citation), the expander
+did not visibly fail on those specific claims — the swallowed-exception bug is
+an independent finding, not a competing explanation for the headline pattern
+above, whose observed cause (proposed quotes rejected by `SpanValidator`) sits
+downstream of and unaffected by the expander. But it can't be fully ruled out
+that the expander silently degraded on one of these three without leaving a
+trace, which is exactly what the fix now prevents going forward: a future
+re-run under the fixed code will either succeed cleanly or surface a visible
+error, removing this ambiguity for every claim run from here on.
 
 ## What's still blocked
 
