@@ -18,7 +18,7 @@ query:
     enabled: true
     n_queries: 3
     include_negation: true     # the knob that makes 'contradicted' reachable at all
-    model: claude-haiku-4-5-20251001
+    model: gemini-flash-latest
     temperature: 0.0
     prompt_version: v1
 
@@ -42,7 +42,7 @@ query:
     top_n: 8                   # passages the verifier actually sees
 
   verifier:
-    model: claude-sonnet-5
+    model: gemini-flash-latest
     temperature: 0.0
     max_tokens: 2048
     prompt_version: v3         # versioned, because prompts are config too
@@ -58,7 +58,7 @@ query:
 
   auditor:
     enabled: true              # false ablates pass 2
-    model: claude-haiku-4-5-20251001
+    model: gemini-flash-latest
     temperature: 0.0
     prompt_version: v2
 

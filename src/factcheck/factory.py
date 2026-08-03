@@ -17,7 +17,7 @@ from .indexing.build import load_retrievers
 from .indexing.manifest import Manifest
 from .ingest.store import JsonlDocumentStore
 from .llm.cache import CachingLLM, StageCache
-from .llm.client import AnthropicClient, CallCounter
+from .llm.client import CallCounter, GeminiClient
 from .ports import LLMClient
 from .retrieval.expand import IdentityExpander, NegationAwareExpander
 from .retrieval.fusion import get_fusion
@@ -69,7 +69,7 @@ def build_session(
         cfg, corpus_hash(list(store)) if len(store) else None
     )
 
-    client = llm or AnthropicClient()
+    client = llm or GeminiClient()
     verifier_llm = _cached(client, cache_dir, "verifier")
     auditor_llm = _cached(client, cache_dir, "auditor")
     expander_llm = _cached(client, cache_dir, "expander")

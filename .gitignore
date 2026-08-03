@@ -7,4 +7,5 @@ __pycache__/
 data/
 index/
 .eval-cache/
+eval/.cache/
 *.pyc

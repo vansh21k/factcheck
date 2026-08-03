@@ -22,9 +22,9 @@ import yaml
 
 from .errors import ConfigError, IndexTimeConfigError
 
-VERIFIER_MODEL = "claude-sonnet-5"
-AUDITOR_MODEL = "claude-haiku-4-5-20251001"
-EXPANDER_MODEL = "claude-haiku-4-5-20251001"
+VERIFIER_MODEL = "gemini-flash-latest"
+AUDITOR_MODEL = "gemini-flash-latest"
+EXPANDER_MODEL = "gemini-flash-latest"
 
 
 # --------------------------------------------------------------------------- #
