@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "factcheck"
+version = "0.1.0"
+description = "Grounded claim verification over a fixed arXiv corpus"
+requires-python = ">=3.9"
+dependencies = [
+    "anthropic>=0.40",
+    "numpy>=1.24",
+    "rank-bm25>=0.2.2",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "mypy>=1.8", "ruff>=0.4", "types-PyYAML"]
+
+[project.scripts]
+fc-fetch = "factcheck.cli.fetch:main"
+fc-index = "factcheck.cli.index:main"
+fc-verify = "factcheck.cli.verify:main"
+fc-eval = "factcheck.evaluation.harness:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = ["live: hits the real Anthropic API; excluded from the default suite"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Typographic look-alike characters are the subject matter here, not a mistake:
+# the validator normalizes them and the tests feed them in deliberately.
+"src/factcheck/verification/validator.py" = ["RUF001"]
+"tests/test_grounding.py" = ["RUF001"]
+
+[tool.mypy]
+python_version = "3.9"
+packages = ["factcheck"]
+mypy_path = "src"
+strict = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["rank_bm25.*"]
+ignore_missing_imports = true

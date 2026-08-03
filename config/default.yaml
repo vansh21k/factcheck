@@ -1,0 +1,67 @@
+# The whole tunable surface, in one place.
+#
+# Index-time and query-time are separated here because they are separated in the
+# config *type*: varying an index-time field against a prebuilt index is an error,
+# not a slow rebuild. The failure mode it prevents is not a crash, it is a plausible
+# number in a results table.
+
+index:
+  chunk:
+    size: 400          # tokens; at this size an abstract is one chunk, and the
+    overlap: 64        # offset machinery is exercised anyway, for scale
+  embedding:
+    model: hash-charngram-v1   # recorded in the manifest; a mismatch refuses startup
+    dim: 256
+
+query:
+  expander:
+    enabled: true
+    n_queries: 3
+    include_negation: true     # the knob that makes 'contradicted' reachable at all
+    model: claude-haiku-4-5-20251001
+    temperature: 0.0
+    prompt_version: v1
+
+  bm25:
+    k1: 1.2
+    b: 0.75
+    top_k: 50
+    min_score: 8.0            # measured: on-topic 15-18, off-topic 4-7 on this corpus
+
+  dense:
+    top_k: 50
+    min_score: 0.55            # measured floor: off-topic peaks ~0.52, on-topic ~0.63
+
+  fusion:
+    strategy: rrf              # ranks only -- BM25 and cosine are incomparable scales
+    rrf_k: 60
+
+  rerank:
+    enabled: false             # near-inert at 50 abstracts; the precision stage at 10^8
+    min_score: 0.0
+    top_n: 8                   # passages the verifier actually sees
+
+  verifier:
+    model: claude-sonnet-5
+    temperature: 0.0
+    max_tokens: 2048
+    prompt_version: v3         # versioned, because prompts are config too
+
+  validator:
+    normalize_whitespace: true
+    normalize_unicode_quotes: true
+    case_insensitive: false
+    min_quote_chars: 40        # a two-word verbatim fragment proves nothing
+    max_quote_chars: 400       # an entire abstract pinpoints nothing
+    # There is deliberately no fuzzy_match_threshold. Normalization adjusts *how*
+    # text is compared; nothing adjusts *whether* the quote must be present.
+
+  auditor:
+    enabled: true              # false ablates pass 2
+    model: claude-haiku-4-5-20251001
+    temperature: 0.0
+    prompt_version: v2
+
+  aggregation:
+    policy: contradiction_wins
+    min_supporting_quotes: 1

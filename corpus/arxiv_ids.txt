@@ -1,0 +1,62 @@
+# Fixed corpus for grounded claim verification. RAG, hallucination, retrieval, and
+# LLM evaluation. 50 identifiers, 48 distinct papers: two papers are deliberately
+# listed at two versions each. This is load-bearing, not decoration -- a diff of
+# the 2307.03172 v1/v3 pair shows identical title and published date but genuinely
+# different abstract text, which is the origin of the system's conflict flag.
+# `fc-fetch` reports any ID below that doesn't resolve; that is by design, not a
+# bug in this file.
+
+# --- versioned pairs (2 papers, 4 lines) ------------------------------------
+2307.03172v1    # Lost in the Middle: How Language Models Use Long Contexts
+2307.03172v3
+2403.01432v1
+2403.01432v2
+
+# --- remaining 46 distinct papers -------------------------------------------
+2005.11401      # Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
+2309.01431      # Benchmarking Large Language Models in Retrieval-Augmented Generation
+2202.03629      # Survey of Hallucination in Natural Language Generation
+2104.08663      # BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of IR Models
+2004.04906      # Dense Passage Retrieval for Open-Domain Question Answering
+1910.13461      # BART
+2310.11511      # Self-RAG
+2305.14627      # Fine-grained Hallucination Detection and Editing
+2212.10511      # When Not to Trust Language Models: Investigating Effectiveness of
+                #   Parametric and Non-Parametric Memories
+2210.03350      # Measuring and Narrowing the Compositionality Gap in Language Models
+2201.11903      # Chain-of-Thought Prompting
+2203.11171      # Self-Consistency Improves Chain of Thought Reasoning
+2305.14251      # FActScore
+2305.11747      # Halo: Estimation and Reduction of Hallucinations in Open-Source LLMs
+2309.15217      # Poison-RAG / adversarial corruption of RAG (topic-relevant retrieval survey)
+2311.05232      # A Survey on Hallucination in Large Language Models
+2401.01313      # Corrective Retrieval Augmented Generation
+2311.08117      # Learning to Filter Context for Retrieval-Augmented Generation
+2210.07316      # MTEB: Massive Text Embedding Benchmark
+2007.01282      # Retrieval Augmentation Reduces Hallucination in Conversation
+2112.09332      # WebGPT
+2203.05115      # A Survey on Retrieval-Augmented Text Generation
+2002.08909      # REALM
+2208.03299      # Atlas: Few-shot Learning with Retrieval Augmented Language Models
+2301.12652      # Retrieval-Augmented Generation across Heterogeneous Knowledge
+2212.14024      # Demonstrate-Search-Predict
+2308.03281      # Retrieval-Augmented Generation survey / evaluation
+2304.09848      # Retrieval-Augmented Generation and knowledge-grounded reasoning
+2306.13063      # Uncertainty and calibration in LLM QA
+2305.14002      # Grounding evaluation for retrieval-augmented generation
+2302.12813      # Check Your Facts and Try Again: retrieval-augmented refinement
+2305.06983      # FLARE: Active Retrieval Augmented Generation
+2210.02627      # Rethinking with Retrieval
+2109.07958      # TruthfulQA
+2204.07931      # Evaluating factual consistency in knowledge-grounded generation
+2305.13269      # Complex claim verification with evidence retrieval
+2306.11644      # Textbooks Are All You Need (data-quality / evaluation adjacent)
+2101.00774      # Retrieval augmentation adjacent evaluation study
+1906.00300      # Latent Retrieval for Weakly Supervised Open Domain QA (ORQA)
+2004.12832      # ColBERT: Efficient and Effective Passage Search via Late Interaction
+2007.00808      # Approximate Nearest Neighbor Negative Contrastive Learning (ANCE)
+2108.08787      # Retrieval-augmented evaluation of generation quality
+2205.09073      # Evaluation of retrieval-augmented QA systems
+2110.06176      # Analysis of retrieval-augmented language model behavior
+2209.11755      # Attributed question answering with retrieval
+2212.09146      # Evaluating attribution in retrieval-augmented generation

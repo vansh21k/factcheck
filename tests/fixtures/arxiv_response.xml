@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom">
+  <link href="http://export.arxiv.org/api/query?id_list=2307.03172v1,2307.03172v3,2005.11401" rel="self" type="application/atom+xml"/>
+  <title type="text">ArXiv Query: id_list=2307.03172v1,2307.03172v3,2005.11401</title>
+  <id>http://arxiv.org/api/dGVzdA</id>
+  <updated>2026-08-01T00:00:00-04:00</updated>
+  <opensearch:totalResults xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">3</opensearch:totalResults>
+  <opensearch:startIndex xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">0</opensearch:startIndex>
+  <opensearch:itemsPerPage xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">3</opensearch:itemsPerPage>
+  <entry>
+    <id>http://arxiv.org/abs/2307.03172v1</id>
+    <updated>2023-07-06T17:59:56Z</updated>
+    <published>2023-07-06T17:59:56Z</published>
+    <title>
+   Lost in the Middle: How Language Models Use Long
+  Contexts
+    </title>
+    <summary>
+  While recent language models have the ability to take long contexts as
+input, relatively little is known about how well they use longer context.
+We analyze the performance of language models on two tasks that require
+identifying relevant information in their input context: multi-document
+question answering and key-value retrieval. We find that performance can
+degrade significantly when changing the position of relevant information,
+indicating that current language models do not robustly make use of
+information in long input contexts. ORIGINAL-FINDING-V1.
+    </summary>
+    <author>
+      <name>Nelson F. Liu</name>
+    </author>
+    <author>
+      <name>Kevin Lin</name>
+    </author>
+    <author>
+      <name>John Hewitt</name>
+    </author>
+    <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2307.03172v3</id>
+    <updated>2023-11-20T18:05:00Z</updated>
+    <published>2023-07-06T17:59:56Z</published>
+    <title>
+   Lost in the Middle: How Language Models Use Long
+  Contexts
+    </title>
+    <summary>
+  While recent language models have the ability to take long contexts as
+input, relatively little is known about how well they use longer context.
+We analyze the performance of language models on two tasks that require
+identifying relevant information in their input context: multi-document
+question answering and key-value retrieval. We find that performance
+often degrades significantly when relevant information occurs in the
+middle of long contexts, and that this U-shaped performance curve
+persists across a range of model architectures. REVISED-FINDING-V3.
+    </summary>
+    <author>
+      <name>Nelson F. Liu</name>
+    </author>
+    <author>
+      <name>Kevin Lin</name>
+    </author>
+    <author>
+      <name>John Hewitt</name>
+    </author>
+    <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2005.11401v4</id>
+    <updated>2021-04-12T00:00:00Z</updated>
+    <published>2020-05-22T00:00:00Z</published>
+    <title>
+  Retrieval-Augmented Generation for Knowledge-Intensive
+  NLP Tasks
+    </title>
+    <summary>
+  Large pre-trained language models have been shown to store factual
+knowledge in their parameters, and achieve state-of-the-art results when
+fine-tuned on downstream NLP tasks. We explore a general-purpose
+fine-tuning recipe for retrieval-augmented generation (RAG) -- models
+which combine pre-trained parametric and non-parametric memory for
+language generation.
+    </summary>
+    <author>
+      <name>Patrick Lewis</name>
+    </author>
+    <author>
+      <name>Ethan Perez</name>
+    </author>
+    <arxiv:primary_category xmlns:arxiv="http://arxiv.org/schemas/atom" term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+</feed>
