@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 from factcheck.config import ExpanderConfig, RerankConfig
+from factcheck.errors import ModelCallError
 from factcheck.retrieval.expand import IdentityExpander, NegationAwareExpander
 from factcheck.retrieval.fusion import ReciprocalRankFusion, WeightedScoreFusion, get_fusion
 from factcheck.retrieval.hybrid import HybridRetriever, RetrievalPipeline
@@ -218,14 +219,11 @@ def test_negation_expander_skips_negation_when_disabled() -> None:
 
 @pytest.mark.parametrize(
     "bad_response",
-    [
-        "not a dict at all",
-        [],
-        RuntimeError("model call failed"),
-    ],
-    ids=["malformed-string", "empty-list", "exception"],
+    ["not a dict at all", []],
+    ids=["malformed-string", "empty-list"],
 )
-def test_expander_degrades_to_identity_on_bad_output(bad_response: Any) -> None:
+def test_expander_degrades_to_identity_on_malformed_output(bad_response: Any) -> None:
+    """A call that *succeeds* with an unusable shape degrades gracefully."""
     claim = "Water boils at 100 degrees Celsius at sea level."
     llm = FakeLLM(bad_response)
     expander = NegationAwareExpander(llm, ExpanderConfig())
@@ -233,6 +231,24 @@ def test_expander_degrades_to_identity_on_bad_output(bad_response: Any) -> None:
     queries = expander.expand(claim)
 
     assert queries == [Query(claim, kind="claim")]
+
+
+def test_expander_propagates_model_call_error() -> None:
+    """A call that *fails* (rate limit, network, quota) must not be swallowed.
+
+    The negation query is a correctness requirement, not a recall optimization
+    (see NegationAwareExpander's docstring): silently degrading to identity on a
+    transient API failure would silently disable the one query path
+    `contradicted` depends on, with no signal anywhere in the result. Every
+    other stage in this pipeline lets `ModelCallError` propagate to the CLI
+    boundary instead of swallowing it, and this stage now matches.
+    """
+    claim = "Water boils at 100 degrees Celsius at sea level."
+    llm = FakeLLM(ModelCallError("model call failed"))
+    expander = NegationAwareExpander(llm, ExpanderConfig())
+
+    with pytest.raises(ModelCallError):
+        expander.expand(claim)
 
 
 def test_expander_respects_n_queries() -> None:

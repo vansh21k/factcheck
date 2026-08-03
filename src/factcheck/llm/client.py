@@ -165,7 +165,8 @@ class GeminiClient:
             ]
             config.tool_config = types.ToolConfig(
                 function_calling_config=types.FunctionCallingConfig(
-                    mode="ANY", allowed_function_names=[tool["name"]]
+                    mode=types.FunctionCallingConfigMode.ANY,
+                    allowed_function_names=[tool["name"]],
                 )
             )
 
@@ -177,6 +178,8 @@ class GeminiClient:
             raise ModelCallError(f"{model} call failed: {_reason(exc)}") from exc
 
         for candidate in response.candidates or []:
+            if candidate.content is None:
+                continue
             for part in candidate.content.parts or []:
                 if part.function_call is not None:
                     return dict(part.function_call.args or {})

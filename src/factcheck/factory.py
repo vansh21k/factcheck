@@ -17,7 +17,7 @@ from .indexing.build import load_retrievers
 from .indexing.manifest import Manifest
 from .ingest.store import JsonlDocumentStore
 from .llm.cache import CachingLLM, StageCache
-from .llm.client import CallCounter, GeminiClient
+from .llm.client import CallCounter, CountingLLM, GeminiClient
 from .ports import LLMClient
 from .retrieval.expand import IdentityExpander, NegationAwareExpander
 from .retrieval.fusion import get_fusion
@@ -70,11 +70,17 @@ def build_session(
     )
 
     client = llm or GeminiClient()
+    counter = CallCounter()
     verifier_llm = _cached(client, cache_dir, "verifier")
     auditor_llm = _cached(client, cache_dir, "auditor")
-    expander_llm = _cached(client, cache_dir, "expander")
+    # Counted here rather than left to FactChecker: the expander (and, when
+    # enabled, the reranker -- both share this client) call the LLM directly from
+    # RetrievalPipeline, outside FactChecker's own CountingLLM wrapping of
+    # verifier_llm/auditor_llm. Left unwrapped, every claim through the default
+    # NegationAwareExpander makes one real, billed call that `llm_calls` never
+    # reflects.
+    expander_llm = CountingLLM(_cached(client, cache_dir, "expander"), counter)
 
-    counter = CallCounter()
     retrievers = load_retrievers(index_dir, manifest, cfg)
     query = cfg.query
     pipeline = RetrievalPipeline(

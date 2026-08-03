@@ -87,20 +87,26 @@ class NegationAwareExpander:
     def expand(self, claim: str) -> list[Query]:
         queries = [Query(claim, kind="claim")]
 
+        result = self._llm.complete(
+            system=_SYSTEM_PROMPT,
+            user=claim,
+            model=self._cfg.model,
+            temperature=self._cfg.temperature,
+            tool=_EXPAND_TOOL,
+            max_tokens=512,
+        )
         try:
-            result = self._llm.complete(
-                system=_SYSTEM_PROMPT,
-                user=claim,
-                model=self._cfg.model,
-                temperature=self._cfg.temperature,
-                tool=_EXPAND_TOOL,
-                max_tokens=512,
-            )
             negation, subclaims = _parse_expansion(result)
-        except Exception:
-            # A claim must always produce at least one query. A flaky or
-            # malformed-output model call degrades to the identity expansion
-            # rather than failing the claim outright.
+        except ValueError:
+            # The call succeeded but returned unusable shape -- a claim must
+            # always produce at least one query, so this degrades to the
+            # identity expansion rather than failing the claim outright.
+            # ``ModelCallError`` from the call above is deliberately *not*
+            # caught here: swallowing it would silently disable the one query
+            # path ``contradicted`` depends on (see the class docstring) with
+            # no signal anywhere in the result. Every other stage in this
+            # pipeline lets ``ModelCallError`` propagate to the CLI boundary
+            # instead of degrading silently; this stage now does too.
             return _dedupe(queries)
 
         if self._cfg.include_negation and negation:
